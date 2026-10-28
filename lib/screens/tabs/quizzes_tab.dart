@@ -194,43 +194,98 @@ class _QuizzesTabState extends State<QuizzesTab> {
       child: Row(
         children: tickerItems.map((item) {
           final color = item['color'] as Color;
-          return Container(
-            margin: const EdgeInsets.only(right: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceCard,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withAlpha(90)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(item['icon'] as IconData, color: color, size: 16),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      item['title'] as String,
-                      style: GoogleFonts.outfit(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        color: color,
-                        letterSpacing: 0.6,
-                      ),
+          return InkWell(
+            onTap: () {
+              final title = item['title'] as String;
+              if (title.contains('СЛОВО')) {
+                final wordCat = (bundle.categories as List<QuizCategory>).firstWhere(
+                  (c) => c.words.isNotEmpty,
+                  orElse: () => bundle.categories.last,
+                );
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => WordPuzzleScreen(words: wordCat.words),
+                  ),
+                );
+              } else if (title.contains('ДЕРБИ')) {
+                final derbyCat = (bundle.categories as List<QuizCategory>).firstWhere(
+                  (c) => c.questions.isNotEmpty,
+                  orElse: () => bundle.categories.first,
+                );
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => QuizPlayScreen(category: derbyCat),
+                  ),
+                );
+              } else if (title.contains('ТУР 19')) {
+                setState(() {
+                  _selectedFilterIndex = 1;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: AppTheme.surfaceCard,
+                    content: Text(
+                      '🏟️ Выбраны квизы раздела «Клубы & Арены»',
+                      style: GoogleFonts.inter(color: AppTheme.secondary, fontWeight: FontWeight.bold),
                     ),
-                    Text(
-                      item['subtitle'] as String,
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.textPrimary,
-                      ),
+                    duration: const Duration(seconds: 1),
+                  ),
+                );
+              } else {
+                setState(() {
+                  _selectedFilterIndex = 3;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: AppTheme.surfaceCard,
+                    content: Text(
+                      '🏆 Выбраны квизы раздела «Рекорды Лиги»',
+                      style: GoogleFonts.inter(color: AppTheme.accentGold, fontWeight: FontWeight.bold),
                     ),
-                  ],
-                ),
-              ],
+                    duration: const Duration(seconds: 1),
+                  ),
+                );
+              }
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              margin: const EdgeInsets.only(right: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceCard,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: color.withAlpha(90)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(item['icon'] as IconData, color: color, size: 16),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        item['title'] as String,
+                        style: GoogleFonts.outfit(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: color,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                      Text(
+                        item['subtitle'] as String,
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           );
         }).toList(),
@@ -326,40 +381,50 @@ class _QuizzesTabState extends State<QuizzesTab> {
                   children: [
                     // Team 1
                     Expanded(
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 52,
-                            height: 52,
-                            decoration: BoxDecoration(
-                              color: AppTheme.marathonRed.withAlpha(30),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: AppTheme.marathonRed, width: 2),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => QuizPlayScreen(category: firstCat),
                             ),
-                            alignment: Alignment.center,
-                            child: const Text('🔴', style: TextStyle(fontSize: 22)),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'ФК «Спартак»',
-                            style: GoogleFonts.outfit(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimary,
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: AppTheme.marathonRed.withAlpha(30),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppTheme.marathonRed, width: 2),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Text('🔴', style: TextStyle(fontSize: 22)),
                             ),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            '1.85',
-                            style: GoogleFonts.outfit(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.secondary,
+                            const SizedBox(height: 6),
+                            Text(
+                              'ФК «Спартак»',
+                              style: GoogleFonts.outfit(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimary,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
+                            Text(
+                              '1.85',
+                              style: GoogleFonts.outfit(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.secondary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
@@ -396,40 +461,50 @@ class _QuizzesTabState extends State<QuizzesTab> {
 
                     // Team 2
                     Expanded(
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 52,
-                            height: 52,
-                            decoration: BoxDecoration(
-                              color: AppTheme.secondary.withAlpha(30),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: AppTheme.secondary, width: 2),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => QuizPlayScreen(category: firstCat),
                             ),
-                            alignment: Alignment.center,
-                            child: const Text('🔵', style: TextStyle(fontSize: 22)),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'ФК «Зенит»',
-                            style: GoogleFonts.outfit(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimary,
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: AppTheme.secondary.withAlpha(30),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppTheme.secondary, width: 2),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Text('🔵', style: TextStyle(fontSize: 22)),
                             ),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            '2.05',
-                            style: GoogleFonts.outfit(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.secondary,
+                            const SizedBox(height: 6),
+                            Text(
+                              'ФК «Зенит»',
+                              style: GoogleFonts.outfit(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimary,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
+                            Text(
+                              '2.05',
+                              style: GoogleFonts.outfit(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.secondary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],

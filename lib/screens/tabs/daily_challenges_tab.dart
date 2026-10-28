@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../../models/quiz_models.dart';
 import '../../providers/loyalty_provider.dart';
 import '../../theme/app_theme.dart';
+import '../quiz_play_screen.dart';
+import '../true_false_screen.dart';
+import '../word_puzzle_screen.dart';
 
 /// Unique MarathonBet Daily Sports Arena & Fan Express Hub
 class DailyChallengesTab extends StatelessWidget {
@@ -21,6 +24,43 @@ class DailyChallengesTab extends StatelessWidget {
         return Icons.verified_rounded;
       default:
         return Icons.sports_soccer_rounded;
+    }
+  }
+
+  void _navigateToChallenge(
+    BuildContext context,
+    DailyChallenge challenge,
+    dynamic bundle,
+  ) {
+    if (bundle == null) return;
+    final categories = bundle.categories as List<QuizCategory>;
+
+    if (challenge.id == 'dc_3' || challenge.icon == 'spellcheck') {
+      final wordCat = categories.firstWhere(
+        (c) => c.words.isNotEmpty,
+        orElse: () => categories.last,
+      );
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => WordPuzzleScreen(words: wordCat.words),
+        ),
+      );
+    } else if (challenge.id == 'dc_4' || challenge.icon == 'verified') {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => TrueFalseScreen(facts: bundle.trueFalseFacts),
+        ),
+      );
+    } else {
+      final quizCat = categories.firstWhere(
+        (c) => c.questions.isNotEmpty,
+        orElse: () => categories.first,
+      );
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => QuizPlayScreen(category: quizCat),
+        ),
+      );
     }
   }
 
@@ -164,7 +204,7 @@ class DailyChallengesTab extends StatelessWidget {
                 separatorBuilder: (context, index) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final challenge = challenges[index];
-                  return _buildChallengeCard(context, challenge, provider);
+                  return _buildChallengeCard(context, challenge, provider, bundle);
                 },
               ),
 
@@ -248,49 +288,68 @@ class DailyChallengesTab extends StatelessWidget {
                 final isPassed = dayNum <= provider.streakDays;
                 final isToday = dayNum == provider.streakDays;
 
-                return Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isPassed
-                        ? AppTheme.accentGold.withAlpha(30)
-                        : AppTheme.surfaceCard,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isToday
-                          ? AppTheme.accentGold
-                          : (isPassed
-                              ? AppTheme.accentGold.withAlpha(120)
-                              : AppTheme.surfaceBorder),
-                      width: isToday ? 2 : 1,
+                return InkWell(
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: AppTheme.surfaceCard,
+                        content: Text(
+                          isPassed
+                              ? '✓ Чекпоинт дня $dayNum уже пройден! Серия активна.'
+                              : '⚽ Чекпоинт дня $dayNum: войдите в игру в этот день для получения +${50 + dayNum * 10} баллов!',
+                          style: GoogleFonts.inter(
+                            color: isPassed ? const Color(0xFF00C853) : AppTheme.accentGold,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isPassed
+                          ? AppTheme.accentGold.withAlpha(30)
+                          : AppTheme.surfaceCard,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isToday
+                            ? AppTheme.accentGold
+                            : (isPassed
+                                ? AppTheme.accentGold.withAlpha(120)
+                                : AppTheme.surfaceBorder),
+                        width: isToday ? 2 : 1,
+                      ),
                     ),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        'ДЕНЬ $dayNum',
-                        style: GoogleFonts.outfit(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
+                    child: Column(
+                      children: [
+                        Text(
+                          'ДЕНЬ $dayNum',
+                          style: GoogleFonts.outfit(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            color: isPassed ? AppTheme.accentGold : AppTheme.textMuted,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Icon(
+                          isPassed ? Icons.sports_soccer_rounded : Icons.lock_outline_rounded,
+                          size: 16,
                           color: isPassed ? AppTheme.accentGold : AppTheme.textMuted,
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Icon(
-                        isPassed ? Icons.sports_soccer_rounded : Icons.lock_outline_rounded,
-                        size: 16,
-                        color: isPassed ? AppTheme.accentGold : AppTheme.textMuted,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        isPassed ? 'ПРОЙДЕН' : '+${50 + dayNum * 10}',
-                        style: GoogleFonts.inter(
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                          color: isPassed ? const Color(0xFF00C853) : AppTheme.textMuted,
+                        const SizedBox(height: 4),
+                        Text(
+                          isPassed ? 'ПРОЙДЕН' : '+${50 + dayNum * 10}',
+                          style: GoogleFonts.inter(
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                            color: isPassed ? const Color(0xFF00C853) : AppTheme.textMuted,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               }),
@@ -357,33 +416,53 @@ class DailyChallengesTab extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           ElevatedButton(
-            onPressed: provider.dailyBonusClaimed
-                ? null
-                : () {
-                    provider.claimDailyBonus();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor: AppTheme.surfaceCard,
-                        content: Text(
-                          '🎉 Ежедневный бонус получен: +100 баллов, +50 XP!',
-                          style: GoogleFonts.inter(
-                            color: AppTheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+            onPressed: () {
+              if (provider.dailyBonusClaimed) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: AppTheme.surfaceCard,
+                    content: Text(
+                      '✓ Ежедневный билет уже активирован! Возвращайтесь завтра.',
+                      style: GoogleFonts.inter(
+                        color: AppTheme.secondary,
+                        fontWeight: FontWeight.bold,
                       ),
-                    );
-                  },
+                    ),
+                  ),
+                );
+              } else {
+                provider.claimDailyBonus();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: AppTheme.surfaceCard,
+                    content: Text(
+                      '🎉 Ежедневный бонус получен: +100 баллов, +50 XP!',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF00C853),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+              }
+            },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
-              foregroundColor: Colors.white,
+              backgroundColor: provider.dailyBonusClaimed
+                  ? AppTheme.surface
+                  : AppTheme.primary,
+              foregroundColor: provider.dailyBonusClaimed
+                  ? AppTheme.textMuted
+                  : Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
+                side: provider.dailyBonusClaimed
+                    ? const BorderSide(color: AppTheme.surfaceBorder)
+                    : BorderSide.none,
               ),
             ),
             child: Text(
-              provider.dailyBonusClaimed ? 'Забран' : 'Забрать',
+              provider.dailyBonusClaimed ? 'Забран ✓' : 'Забрать',
               style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold),
             ),
           ),
@@ -464,152 +543,211 @@ class DailyChallengesTab extends StatelessWidget {
     BuildContext context,
     DailyChallenge challenge,
     LoyaltyProvider provider,
+    dynamic bundle,
   ) {
     final isCompleted = provider.isChallengeCompleted(challenge.id);
     final isClaimed = provider.isChallengeClaimed(challenge.id);
     final progress = provider.getChallengeProgress(challenge.id);
     final progressRatio = (progress / challenge.target).clamp(0.0, 1.0);
 
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isCompleted
-              ? const Color(0xFF00C853).withAlpha(90)
-              : AppTheme.surfaceBorder,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(9),
-                decoration: BoxDecoration(
-                  color: (isCompleted ? const Color(0xFF00C853) : AppTheme.secondary).withAlpha(30),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  _resolveIcon(challenge.icon),
-                  color: isCompleted ? const Color(0xFF00C853) : AppTheme.secondary,
-                  size: 20,
+    return InkWell(
+      onTap: () {
+        if (isClaimed) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: AppTheme.surfaceCard,
+              content: Text(
+                '✓ Награда за «${challenge.title}» уже получена!',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF00C853),
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      challenge.title,
-                      style: GoogleFonts.outfit(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
+            ),
+          );
+        } else if (isCompleted) {
+          provider.claimDailyChallenge(challenge);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: AppTheme.surfaceCard,
+              content: Text(
+                '🏆 Награда получена: +${challenge.coinsReward} баллов, +${challenge.xpReward} XP!',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF00C853),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          );
+        } else {
+          _navigateToChallenge(context, challenge, bundle);
+        }
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isCompleted
+                ? const Color(0xFF00C853).withAlpha(90)
+                : AppTheme.surfaceBorder,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    color: (isCompleted ? const Color(0xFF00C853) : AppTheme.secondary).withAlpha(30),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    _resolveIcon(challenge.icon),
+                    color: isCompleted ? const Color(0xFF00C853) : AppTheme.secondary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        challenge.title,
+                        style: GoogleFonts.outfit(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      challenge.description,
-                      style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary),
-                    ),
+                      const SizedBox(height: 2),
+                      Text(
+                        challenge.description,
+                        style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Progress & Rewards
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Прогресс: $progress / ${challenge.target}',
+                  style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted, fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  children: [
+                    Text('+${challenge.xpReward} XP', style: GoogleFonts.outfit(fontSize: 11, color: AppTheme.secondary, fontWeight: FontWeight.bold)),
+                    const SizedBox(width: 8),
+                    Text('+${challenge.coinsReward} ⚽', style: GoogleFonts.outfit(fontSize: 11, color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Progress & Rewards
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Прогресс: $progress / ${challenge.target}',
-                style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted, fontWeight: FontWeight.bold),
-              ),
-              Row(
-                children: [
-                  Text('+${challenge.xpReward} XP', style: GoogleFonts.outfit(fontSize: 11, color: AppTheme.secondary, fontWeight: FontWeight.bold)),
-                  const SizedBox(width: 8),
-                  Text('+${challenge.coinsReward} ⚽', style: GoogleFonts.outfit(fontSize: 11, color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          ClipRRect(
-            borderRadius: BorderRadius.circular(5),
-            child: LinearProgressIndicator(
-              value: progressRatio,
-              backgroundColor: AppTheme.surface,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                isCompleted ? const Color(0xFF00C853) : AppTheme.primary,
-              ),
-              minHeight: 5,
+              ],
             ),
-          ),
+            const SizedBox(height: 8),
 
-          const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: LinearProgressIndicator(
+                value: progressRatio,
+                backgroundColor: AppTheme.surface,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  isCompleted ? const Color(0xFF00C853) : AppTheme.primary,
+                ),
+                minHeight: 5,
+              ),
+            ),
 
-          // Claim or Status
-          SizedBox(
-            width: double.infinity,
-            child: isClaimed
-                ? Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppTheme.surface,
+            const SizedBox(height: 12),
+
+            // Claim or Status
+            SizedBox(
+              width: double.infinity,
+              child: isClaimed
+                  ? InkWell(
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: AppTheme.surfaceCard,
+                            content: Text(
+                              '✓ Награда за «${challenge.title}» уже получена!',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF00C853),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                       borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.check_circle_rounded, size: 15, color: Color(0xFF00C853)),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Награда получена',
-                          style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF00C853)),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppTheme.surface,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      ],
-                    ),
-                  )
-                : ElevatedButton(
-                    onPressed: isCompleted
-                        ? () {
-                            provider.claimDailyChallenge(challenge);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                backgroundColor: AppTheme.surfaceCard,
-                                content: Text(
-                                  '🏆 Награда получена: +${challenge.coinsReward} баллов, +${challenge.xpReward} XP!',
-                                  style: GoogleFonts.inter(
-                                    color: const Color(0xFF00C853),
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.check_circle_rounded, size: 15, color: Color(0xFF00C853)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Награда получена',
+                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF00C853)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : ElevatedButton.icon(
+                      onPressed: () {
+                        if (isCompleted) {
+                          provider.claimDailyChallenge(challenge);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: AppTheme.surfaceCard,
+                              content: Text(
+                                '🏆 Награда получена: +${challenge.coinsReward} баллов, +${challenge.xpReward} XP!',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF00C853),
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            );
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isCompleted ? const Color(0xFF00C853) : AppTheme.surfaceBorder,
-                      foregroundColor: isCompleted ? Colors.white : AppTheme.textMuted,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                          );
+                        } else {
+                          _navigateToChallenge(context, challenge, bundle);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isCompleted ? const Color(0xFF00C853) : AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: Icon(
+                        isCompleted ? Icons.card_giftcard_rounded : Icons.play_arrow_rounded,
+                        size: 16,
+                      ),
+                      label: Text(
+                        isCompleted ? 'Забрать награду' : 'К заданию ($progress / ${challenge.target})',
+                        style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
                     ),
-                    child: Text(
-                      isCompleted ? 'Забрать награду' : 'В процессе выполнения',
-                      style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

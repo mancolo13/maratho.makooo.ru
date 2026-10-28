@@ -153,22 +153,38 @@ class ProfileTab extends StatelessWidget {
     dynamic nextRank,
     double progress,
   ) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: AppTheme.marathonNavyGradient,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppTheme.primary.withAlpha(120), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withAlpha(30),
-            blurRadius: 18,
-            offset: const Offset(0, 4),
+    return InkWell(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppTheme.surfaceCard,
+            content: Text(
+              '🪪 Fan ID верифицирован в Матч-Центре РПЛ! Ваш текущий уровень: ${currentRank.level} («${currentRank.title}»).',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF00C853),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-        ],
-      ),
-      child: Column(
-        children: [
+        );
+      },
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: AppTheme.marathonNavyGradient,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: AppTheme.primary.withAlpha(120), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primary.withAlpha(30),
+              blurRadius: 18,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
           // Accreditation Top Ribbon
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -294,8 +310,9 @@ class ProfileTab extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   /// Tactical Performance Sheet & Analytics Matrix
   Widget _buildTacticalAnalytics(BuildContext context, LoyaltyProvider provider) {
@@ -329,6 +346,7 @@ class ProfileTab extends StatelessWidget {
           Row(
             children: [
               _buildMetricTile(
+                context,
                 'Матчей сыграно',
                 '${provider.completedQuizzes}',
                 Icons.sports_soccer_rounded,
@@ -336,6 +354,7 @@ class ProfileTab extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               _buildMetricTile(
+                context,
                 'Точность ответов',
                 '${provider.accuracyRate.toInt()}%',
                 Icons.gps_fixed_rounded,
@@ -347,6 +366,7 @@ class ProfileTab extends StatelessWidget {
           Row(
             children: [
               _buildMetricTile(
+                context,
                 'Серия дней',
                 '${provider.streakDays}',
                 Icons.local_fire_department_rounded,
@@ -354,6 +374,7 @@ class ProfileTab extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               _buildMetricTile(
+                context,
                 'Баллов в банке',
                 '${provider.coins}',
                 Icons.account_balance_wallet_rounded,
@@ -366,44 +387,62 @@ class ProfileTab extends StatelessWidget {
     );
   }
 
-  Widget _buildMetricTile(String label, String value, IconData icon, Color color) {
+  Widget _buildMetricTile(BuildContext context, String label, String value, IconData icon, Color color) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withAlpha(40)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    value,
-                    style: GoogleFonts.outfit(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w900,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                  Text(
-                    label,
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      color: AppTheme.textSecondary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+      child: InkWell(
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: AppTheme.surfaceCard,
+              content: Text(
+                '📊 $label: $value',
+                style: GoogleFonts.inter(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+              duration: const Duration(seconds: 1),
             ),
-          ],
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withAlpha(40)),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      value,
+                      style: GoogleFonts.outfit(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      label,
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        color: AppTheme.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -441,51 +480,69 @@ class ProfileTab extends StatelessWidget {
           Column(
             children: ranks.map((rank) {
               final isCurrent = rank.level == userLevel;
-              return Container(
-                margin: const EdgeInsets.only(bottom: 6),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isCurrent ? AppTheme.primary.withAlpha(25) : AppTheme.surface,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: isCurrent ? AppTheme.primary : AppTheme.surfaceBorder.withAlpha(50),
-                    width: isCurrent ? 1.5 : 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      '#${rank.level}',
-                      style: GoogleFonts.outfit(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                        color: isCurrent ? AppTheme.primary : AppTheme.textMuted,
+              return InkWell(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: AppTheme.surfaceCard,
+                      content: Text(
+                        '${rank.badge} Ранг #${rank.level} «${rank.title}»: бонус x${rank.bonusMultiplier}, требуется ${rank.requiredXp} XP',
+                        style: GoogleFonts.inter(
+                          color: isCurrent ? AppTheme.primary : AppTheme.accentGold,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
+                      duration: const Duration(seconds: 2),
                     ),
-                    const SizedBox(width: 8),
-                    Text(rank.badge, style: const TextStyle(fontSize: 14)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        rank.title,
+                  );
+                },
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isCurrent ? AppTheme.primary.withAlpha(25) : AppTheme.surface,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isCurrent ? AppTheme.primary : AppTheme.surfaceBorder.withAlpha(50),
+                      width: isCurrent ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        '#${rank.level}',
                         style: GoogleFonts.outfit(
                           fontSize: 12,
-                          fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
-                          color: isCurrent ? Colors.white : AppTheme.textSecondary,
+                          fontWeight: FontWeight.w900,
+                          color: isCurrent ? AppTheme.primary : AppTheme.textMuted,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    Text(
-                      'x${rank.bonusMultiplier}',
-                      style: GoogleFonts.outfit(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: isCurrent ? AppTheme.accentGold : AppTheme.textMuted,
+                      const SizedBox(width: 8),
+                      Text(rank.badge, style: const TextStyle(fontSize: 14)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          rank.title,
+                          style: GoogleFonts.outfit(
+                            fontSize: 12,
+                            fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
+                            color: isCurrent ? Colors.white : AppTheme.textSecondary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                      Text(
+                        'x${rank.bonusMultiplier}',
+                        style: GoogleFonts.outfit(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: isCurrent ? AppTheme.accentGold : AppTheme.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }).toList(),
@@ -497,69 +554,89 @@ class ProfileTab extends StatelessWidget {
 
   /// Single Achievement Card
   Widget _buildAchievementTile(BuildContext context, dynamic ach, bool isUnlocked) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isUnlocked
-              ? AppTheme.accentGold.withAlpha(80)
-              : AppTheme.surfaceBorder,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: (isUnlocked ? AppTheme.accentGold : AppTheme.surfaceBorder).withAlpha(30),
-              borderRadius: BorderRadius.circular(10),
+    return InkWell(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppTheme.surfaceCard,
+            content: Text(
+              isUnlocked
+                  ? '🏆 Достижение «${ach.title}» разблокировано! ${ach.description}'
+                  : '🔒 Достижение «${ach.title}»: ${ach.description}',
+              style: GoogleFonts.inter(
+                color: isUnlocked ? AppTheme.accentGold : AppTheme.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            child: Icon(
-              isUnlocked ? Icons.emoji_events_rounded : Icons.lock_outline_rounded,
-              color: isUnlocked ? AppTheme.accentGold : AppTheme.textMuted,
-              size: 20,
-            ),
+            duration: const Duration(seconds: 2),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  ach.title,
-                  style: GoogleFonts.outfit(
-                    fontSize: 13,
+        );
+      },
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isUnlocked
+                ? AppTheme.accentGold.withAlpha(80)
+                : AppTheme.surfaceBorder,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: (isUnlocked ? AppTheme.accentGold : AppTheme.surfaceBorder).withAlpha(30),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                isUnlocked ? Icons.emoji_events_rounded : Icons.lock_outline_rounded,
+                color: isUnlocked ? AppTheme.accentGold : AppTheme.textMuted,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ach.title,
+                    style: GoogleFonts.outfit(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    ach.description,
+                    style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            if (isUnlocked)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentGold.withAlpha(20),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'Открыто',
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimary,
+                    color: AppTheme.accentGold,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  ach.description,
-                  style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary),
-                ),
-              ],
-            ),
-          ),
-          if (isUnlocked)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-              decoration: BoxDecoration(
-                color: AppTheme.accentGold.withAlpha(20),
-                borderRadius: BorderRadius.circular(6),
               ),
-              child: Text(
-                'Открыто',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.accentGold,
-                ),
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

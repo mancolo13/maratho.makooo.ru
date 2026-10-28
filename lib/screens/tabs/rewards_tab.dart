@@ -176,28 +176,44 @@ class _RewardsTabState extends State<RewardsTab> {
   Widget _buildDigitalFanCard(BuildContext context, LoyaltyProvider provider) {
     final currentRank = provider.currentRank;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: AppTheme.marathonNavyGradient,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppTheme.primary.withAlpha(120), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withAlpha(30),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
+    return InkWell(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppTheme.surfaceCard,
+            content: Text(
+              '💳 Карта болельщика: ${currentRank.title} (Множитель x${currentRank.bonusMultiplier}). Баланс: ${provider.coins} ⚽',
+              style: GoogleFonts.inter(
+                color: AppTheme.accentGold,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Top Row: Club Brand & Contactless
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+        );
+      },
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: AppTheme.marathonNavyGradient,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: AppTheme.primary.withAlpha(120), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primary.withAlpha(30),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Row: Club Brand & Contactless
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
               Row(
                 children: [
                   Container(
@@ -330,8 +346,9 @@ class _RewardsTabState extends State<RewardsTab> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   /// Category Filter Pills
   Widget _buildCategoryPills() {
@@ -397,158 +414,241 @@ class _RewardsTabState extends State<RewardsTab> {
         final canAfford = provider.coins >= reward.cost;
         final rewardColor = _resolveColor(reward.colorHex);
 
-        return Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppTheme.surfaceCard,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isPurchased
-                  ? const Color(0xFF00C853).withAlpha(90)
-                  : AppTheme.surfaceBorder,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Icon Badge & Category Tag
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(9),
-                    decoration: BoxDecoration(
-                      color: rewardColor.withAlpha(25),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      _resolveIcon(reward.icon),
-                      color: rewardColor,
-                      size: 22,
+        return InkWell(
+          onTap: () {
+            if (isPurchased) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: AppTheme.surfaceCard,
+                  content: Text(
+                    '✓ «${reward.title}» уже в вашем инвентаре!',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF00C853),
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppTheme.surface,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      reward.category,
-                      style: GoogleFonts.outfit(
-                        fontSize: 9,
+                ),
+              );
+            } else if (canAfford) {
+              final success = provider.purchaseReward(reward);
+              if (success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: AppTheme.surfaceCard,
+                    content: Text(
+                      '🎉 «${reward.title}» успешно приобретено!',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF00C853),
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textSecondary,
                       ),
                     ),
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 10),
-
-              // Title
-              Text(
-                reward.title,
-                style: GoogleFonts.outfit(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-
-              const SizedBox(height: 4),
-
-              // Description
-              Expanded(
-                child: Text(
-                  reward.description,
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    color: AppTheme.textSecondary,
-                    height: 1.25,
+                );
+              }
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: AppTheme.surfaceCard,
+                  content: Text(
+                    '⚽ Для покупки «${reward.title}» нужно ${reward.cost} баллов (у вас ${provider.coins}). Проходите квизы для заработка!',
+                    style: GoogleFonts.inter(
+                      color: AppTheme.accentGold,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  maxLines: 3,
+                ),
+              );
+            }
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceCard,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isPurchased
+                    ? const Color(0xFF00C853).withAlpha(90)
+                    : AppTheme.surfaceBorder,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Icon Badge & Category Tag
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        color: rewardColor.withAlpha(25),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        _resolveIcon(reward.icon),
+                        color: rewardColor,
+                        size: 22,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surface,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        reward.category,
+                        style: GoogleFonts.outfit(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+
+                // Title
+                Text(
+                  reward.title,
+                  style: GoogleFonts.outfit(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-              ),
 
-              const SizedBox(height: 8),
+                const SizedBox(height: 4),
 
-              // Price Tag
-              Row(
-                children: [
-                  const Icon(Icons.sports_soccer_rounded, size: 14, color: AppTheme.accentGold),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${reward.cost}',
-                    style: GoogleFonts.outfit(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                      color: AppTheme.accentGold,
+                // Description
+                Expanded(
+                  child: Text(
+                    reward.description,
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      color: AppTheme.textSecondary,
+                      height: 1.25,
                     ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
+                ),
 
-              const SizedBox(height: 8),
+                const SizedBox(height: 8),
 
-              // Action Button
-              SizedBox(
-                width: double.infinity,
-                child: isPurchased
-                    ? Container(
-                        padding: const EdgeInsets.symmetric(vertical: 7),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF00C853).withAlpha(25),
+                // Price Tag
+                Row(
+                  children: [
+                    const Icon(Icons.sports_soccer_rounded, size: 14, color: AppTheme.accentGold),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${reward.cost}',
+                      style: GoogleFonts.outfit(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        color: AppTheme.accentGold,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 8),
+
+                // Action Button
+                SizedBox(
+                  width: double.infinity,
+                  child: isPurchased
+                      ? InkWell(
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: AppTheme.surfaceCard,
+                                content: Text(
+                                  '✓ «${reward.title}» уже в вашем инвентаре!',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF00C853),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF00C853).withAlpha(80)),
-                        ),
-                        child: Text(
-                          'В инвентаре',
-                          style: GoogleFonts.outfit(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF00C853),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 7),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF00C853).withAlpha(25),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFF00C853).withAlpha(80)),
+                            ),
+                            child: Text(
+                              'В инвентаре ✓',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF00C853),
+                              ),
+                            ),
                           ),
-                        ),
-                      )
-                    : ElevatedButton(
-                        onPressed: canAfford
-                            ? () {
-                                final success = provider.purchaseReward(reward);
-                                if (success) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      backgroundColor: AppTheme.surfaceCard,
-                                      content: Text(
-                                        '🎉 «${reward.title}» успешно приобретено!',
-                                        style: GoogleFonts.inter(
-                                          color: AppTheme.primary,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                        )
+                      : ElevatedButton(
+                          onPressed: () {
+                            if (canAfford) {
+                              final success = provider.purchaseReward(reward);
+                              if (success) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    backgroundColor: AppTheme.surfaceCard,
+                                    content: Text(
+                                      '🎉 «${reward.title}» успешно приобретено!',
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFF00C853),
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  );
-                                }
+                                  ),
+                                );
                               }
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: canAfford ? AppTheme.primary : AppTheme.surfaceBorder,
-                          foregroundColor: canAfford ? Colors.white : AppTheme.textMuted,
-                          padding: const EdgeInsets.symmetric(vertical: 7),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor: AppTheme.surfaceCard,
+                                  content: Text(
+                                    '⚽ Для покупки «${reward.title}» нужно ${reward.cost} баллов (у вас ${provider.coins}). Проходите квизы для заработка!',
+                                    style: GoogleFonts.inter(
+                                      color: AppTheme.accentGold,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: canAfford ? AppTheme.primary : AppTheme.surface,
+                            foregroundColor: canAfford ? Colors.white : AppTheme.textMuted,
+                            padding: const EdgeInsets.symmetric(vertical: 7),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: canAfford
+                                  ? BorderSide.none
+                                  : const BorderSide(color: AppTheme.surfaceBorder),
+                            ),
+                          ),
+                          child: Text(
+                            canAfford ? 'Купить' : 'Мало баллов (Инфо)',
+                            style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
                         ),
-                        child: Text(
-                          canAfford ? 'Купить' : 'Мало баллов',
-                          style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         );
       },
