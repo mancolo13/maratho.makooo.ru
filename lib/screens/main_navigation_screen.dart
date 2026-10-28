@@ -100,32 +100,36 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           // Fire streak chip
           FittedBox(
             fit: BoxFit.scaleDown,
-            child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 3),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppTheme.accentRose.withAlpha(25),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppTheme.accentRose.withAlpha(70)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.local_fire_department_rounded,
-                    color: AppTheme.accentRose,
-                    size: 14,
-                  ),
-                  const SizedBox(width: 3),
-                  Text(
-                    '${provider.streakDays}',
-                    style: GoogleFonts.outfit(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
+            child: InkWell(
+              onTap: () => setState(() => _currentIndex = 1),
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentRose.withAlpha(25),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppTheme.accentRose.withAlpha(70)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.local_fire_department_rounded,
                       color: AppTheme.accentRose,
+                      size: 14,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 3),
+                    Text(
+                      '${provider.streakDays}',
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.accentRose,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -133,31 +137,35 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           // Coins chip
           FittedBox(
             fit: BoxFit.scaleDown,
-            child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 3),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppTheme.accentGold.withAlpha(25),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppTheme.accentGold.withAlpha(70)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    currentRank.badge,
-                    style: const TextStyle(fontSize: 11),
-                  ),
-                  const SizedBox(width: 3),
-                  Text(
-                    '${provider.coins}',
-                    style: GoogleFonts.outfit(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.accentGold,
+            child: InkWell(
+              onTap: () => setState(() => _currentIndex = 2),
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentGold.withAlpha(25),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppTheme.accentGold.withAlpha(70)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      currentRank.badge,
+                      style: const TextStyle(fontSize: 11),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 3),
+                    Text(
+                      '${provider.coins}',
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.accentGold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
